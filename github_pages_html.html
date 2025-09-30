@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Entreprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.8s ease-out forwards;
+        }
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+        .chart-bar {
+            transition: all 0.3s ease;
+        }
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        // Icônes SVG
+        const icons = {
+            trendingUp: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`,
+            trendingDown: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>`,
+            dollarSign: `<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+            users: `<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`,
+            cart: `<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`,
+            activity: `<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`
+        };
+
+        const metrics = [
+            {
+                title: 'Revenu Total',
+                value: '67 000€',
+                change: '+12.5%',
+                trend: 'up',
+                icon: icons.dollarSign,
+                color: 'from-violet-500 to-purple-600'
+            },
+            {
+                title: 'Clients Actifs',
+                value: '2,847',
+                change: '+8.2%',
+                trend: 'up',
+                icon: icons.users,
+                color: 'from-blue-500 to-cyan-600'
+            },
+            {
+                title: 'Commandes',
+                value: '1,234',
+                change: '+23.1%',
+                trend: 'up',
+                icon: icons.cart,
+                color: 'from-pink-500 to-rose-600'
+            },
+            {
+                title: 'Taux Conversion',
+                value: '3.24%',
+                change: '-2.4%',
+                trend: 'down',
+                icon: icons.activity,
+                color: 'from-orange-500 to-amber-600'
+            }
+        ];
+
+        const revenueData = [
+            { mois: 'Jan', valeur: 45000 },
+            { mois: 'Fév', valeur: 52000 },
+            { mois: 'Mar', valeur: 48000 },
+            { mois: 'Avr', valeur: 61000 },
+            { mois: 'Mai', valeur: 58000 },
+            { mois: 'Jun', valeur: 67000 }
+        ];
+
+        const salesData = [
+            { produit: 'Produit A', ventes: 4200 },
+            { produit: 'Produit B', ventes: 3800 },
+            { produit: 'Produit C', ventes: 2900 },
+            { produit: 'Produit D', ventes: 2100 }
+        ];
+
+        const categoryData = [
+            { name: 'Électronique', value: 35, color: '#8b5cf6' },
+            { name: 'Mode', value: 28, color: '#ec4899' },
+            { name: 'Maison', value: 22, color: '#f59e0b' },
+            { name: 'Sports', value: 15, color: '#10b981' }
+        ];
+
+        const statsData = [
+            { label: 'Panier Moyen', value: '54.32€', color: 'bg-purple-500' },
+            { label: 'Nouveaux Clients', value: '342', color: 'bg-pink-500' },
+            { label: 'Taux Retour', value: '2.1%', color: 'bg-orange-500' },
+            { label: 'Satisfaction', value: '94%', color: 'bg-emerald-500' }
+        ];
+
+        let selectedPeriod = 'month';
+
+        function createLineChart(containerId, data) {
+            const container = document.getElementById(containerId);
+            const width = container.clientWidth;
+            const height = 300;
+            const padding = 40;
+            
+            const maxValue = Math.max(...data.map(d => d.valeur));
+            const minValue = 0;
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', height);
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            
+            // Grille
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (height - 2 * padding) * i / 4;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', padding);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', width - padding);
+                line.setAttribute('y2', y);
+                line.setAttribute('stroke', '#ffffff20');
+                line.setAttribute('stroke-dasharray', '3 3');
+                svg.appendChild(line);
+            }
+            
+            // Ligne de données
+            const points = data.map((d, i) => {
+                const x = padding + (width - 2 * padding) * i / (data.length - 1);
+                const y = height - padding - ((d.valeur - minValue) / (maxValue - minValue)) * (height - 2 * padding);
+                return `${x},${y}`;
+            }).join(' ');
+            
+            // Area
+            const areaPoints = `${padding},${height - padding} ` + points + ` ${width - padding},${height - padding}`;
+            const area = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            area.setAttribute('points', areaPoints);
+            area.setAttribute('fill', 'url(#gradient)');
+            area.setAttribute('opacity', '0.3');
+            
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            gradient.innerHTML = `
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0" />
+                </linearGradient>
+            `;
+            svg.appendChild(gradient);
+            svg.appendChild(area);
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            line.setAttribute('points', points);
+            line.setAttribute('fill', 'none');
+            line.setAttribute('stroke', '#8b5cf6');
+            line.setAttribute('stroke-width', '3');
+            svg.appendChild(line);
+            
+            // Points
+            data.forEach((d, i) => {
+                const x = padding + (width - 2 * padding) * i / (data.length - 1);
+                const y = height - padding - ((d.valeur - minValue) / (maxValue - minValue)) * (height - 2 * padding);
+                
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', '4');
+                circle.setAttribute('fill', '#8b5cf6');
+                svg.appendChild(circle);
+                
+                // Labels X
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x);
+                text.setAttribute('y', height - 10);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', '#c4b5fd');
+                text.setAttribute('font-size', '12');
+                text.textContent = d.mois;
+                svg.appendChild(text);
+            });
+            
+            container.appendChild(svg);
+        }
+
+        function createBarChart(containerId, data) {
+            const container = document.getElementById(containerId);
+            const width = container.clientWidth;
+            const height = 300;
+            const padding = 40;
+            
+            const maxValue = Math.max(...data.map(d => d.ventes));
+            const barWidth = (width - 2 * padding) / data.length * 0.7;
+            const barSpacing = (width - 2 * padding) / data.length;
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', height);
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            
+            data.forEach((d, i) => {
+                const barHeight = (d.ventes / maxValue) * (height - 2 * padding);
+                const x = padding + barSpacing * i + (barSpacing - barWidth) / 2;
+                const y = height - padding - barHeight;
+                
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', barWidth);
+                rect.setAttribute('height', barHeight);
+                rect.setAttribute('fill', '#8b5cf6');
+                rect.setAttribute('rx', '8');
+                rect.classList.add('chart-bar');
+                svg.appendChild(rect);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x + barWidth / 2);
+                text.setAttribute('y', height - 10);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', '#c4b5fd');
+                text.setAttribute('font-size', '12');
+                text.textContent = d.produit;
+                svg.appendChild(text);
+            });
+            
+            container.appendChild(svg);
+        }
+
+        function createPieChart(containerId, data) {
+            const container = document.getElementById(containerId);
+            const size = 250;
+            const radius = 100;
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', size);
+            svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+            
+            let currentAngle = -90;
+            const total = data.reduce((sum, d) => sum + d.value, 0);
+            
+            data.forEach((d, i) => {
+                const angle = (d.value / total) * 360;
+                const startAngle = currentAngle * Math.PI / 180;
+                const endAngle = (currentAngle + angle) * Math.PI / 180;
+                
+                const x1 = centerX + radius * Math.cos(startAngle);
+                const y1 = centerY + radius * Math.sin(startAngle);
+                const x2 = centerX + radius * Math.cos(endAngle);
+                const y2 = centerY + radius * Math.sin(endAngle);
+                
+                const largeArc = angle > 180 ? 1 : 0;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`);
+                path.setAttribute('fill', d.color);
+                path.setAttribute('opacity', '0.9');
+                svg.appendChild(path);
+                
+                const labelAngle = (currentAngle + angle / 2) * Math.PI / 180;
+                const labelX = centerX + (radius * 0.7) * Math.cos(labelAngle);
+                const labelY = centerY + (radius * 0.7) * Math.sin(labelAngle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', labelX);
+                text.setAttribute('y', labelY);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-size', '12');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = `${Math.round(d.value)}%`;
+                svg.appendChild(text);
+                
+                currentAngle += angle;
+            });
+            
+            container.appendChild(svg);
+        }
+
+        function render() {
+            const app = document.getElementById('root');
+            app.innerHTML = `
+                <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+                    <div class="max-w-7xl mx-auto">
+                        <div class="mb-8 animate-slide-in">
+                            <h1 class="text-4xl font-bold text-white mb-2">Dashboard Entreprise</h1>
+                            <p class="text-purple-200">Vue d'ensemble des performances</p>
+                            
+                            <div class="mt-4 flex gap-2">
+                                <button onclick="changePeriod('week')" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 ${selectedPeriod === 'week' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50' : 'bg-white/10 text-purple-200 hover:bg-white/20'}">Semaine</button>
+                                <button onclick="changePeriod('month')" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 ${selectedPeriod === 'month' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50' : 'bg-white/10 text-purple-200 hover:bg-white/20'}">Mois</button>
+                                <button onclick="changePeriod('year')" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 ${selectedPeriod === 'year' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50' : 'bg-white/10 text-purple-200 hover:bg-white/20'}">Année</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            ${metrics.map((metric, idx) => `
+                                <div class="animate-fade-in" style="animation-delay: ${idx * 100}ms">
+                                    <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="bg-gradient-to-br ${metric.color} p-3 rounded-xl shadow-lg">
+                                                ${metric.icon}
+                                            </div>
+                                            <div class="flex items-center gap-1 px-3 py-1 rounded-full ${metric.trend === 'up' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}">
+                                                ${metric.trend === 'up' ? icons.trendingUp : icons.trendingDown}
+                                                <span class="text-sm font-semibold">${metric.change}</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-purple-200 text-sm mb-1">${metric.title}</p>
+                                        <p class="text-white text-3xl font-bold">${metric.value}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 animate-fade-in" style="animation-delay: 400ms">
+                                <h3 class="text-xl font-bold text-white mb-4">Évolution du Revenu</h3>
+                                <div id="line-chart"></div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 animate-fade-in" style="animation-delay: 500ms">
+                                <h3 class="text-xl font-bold text-white mb-4">Ventes par Produit</h3>
+                                <div id="bar-chart"></div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 animate-fade-in" style="animation-delay: 600ms">
+                                <h3 class="text-xl font-bold text-white mb-4">Répartition par Catégorie</h3>
+                                <div class="flex items-center justify-center">
+                                    <div id="pie-chart"></div>
+                                </div>
+                                <div class="mt-4 space-y-2">
+                                    ${categoryData.map(cat => `
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-3 h-3 rounded-full" style="background-color: ${cat.color}"></div>
+                                                <span class="text-purple-200 text-sm">${cat.name}</span>
+                                            </div>
+                                            <span class="text-white font-semibold">${cat.value}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 animate-fade-in" style="animation-delay: 700ms">
+                                <h3 class="text-xl font-bold text-white mb-4">Statistiques Rapides</h3>
+                                <div class="space-y-4">
+                                    ${statsData.map(stat => `
+                                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-3 h-3 rounded-full ${stat.color} animate-pulse"></div>
+                                                <span class="text-purple-200">${stat.label}</span>
+                                            </div>
+                                            <span class="text-white font-bold text-lg">${stat.value}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                createLineChart('line-chart', revenueData);
+                createBarChart('bar-chart', salesData);
+                createPieChart('pie-chart', categoryData);
+            }, 100);
+        }
+
+        window.changePeriod = function(period) {
+            selectedPeriod = period;
+            render();
+        };
+
+        render();
+    </script>
+</body>
+</html>
